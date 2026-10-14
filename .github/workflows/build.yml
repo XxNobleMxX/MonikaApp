@@ -1,0 +1,42 @@
+name: Compilar APK Monika
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Sincronizar Capacitor
+        run: |
+          npm install
+          npx cap sync android
+
+      - name: Dar permisos a Gradlew
+        run: chmod +x android/gradlew
+
+      - name: Compilar APK con Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Subir APK generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: Monika-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
